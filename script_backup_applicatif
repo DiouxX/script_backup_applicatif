@@ -119,8 +119,8 @@ fi
 #Copie de l'archive  vers le serveur renseigne en parametre
 if [ "$TAR_FOLDER" == "" ]
 then
-	verbose "\nCommande Transfert : scp $NAME_FILE $TARGET"
-	scp $NAME_FILE $TARGET > /dev/null 2>&1
+	verbose "\nCommande Transfert : scp $NAME $TARGET"
+	scp $NAME $TARGET > /dev/null 2>&1
 else
 	verbose "\nCommande Transfert : scp $TAR_FOLDER/$NAME $TARGET"
 	scp $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
@@ -136,7 +136,7 @@ fi
 #Suppresion du dump local
 if [ "$TAR_FOLDER" == "" ]
 then
-        rm -f $NAME_FILE
+        rm -f $NAME
 else
         rm -f $TAR_FOLDER/$NAME
 fi 
