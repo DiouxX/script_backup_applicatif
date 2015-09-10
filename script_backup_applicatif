@@ -143,7 +143,7 @@ fi
  
 if [ $? != 0 ]
 then
-        verbose "Suppression Dump local \t\t$ROUGE[KO]$NORMAL"
+        verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
 else
-        verbose "Suppression Dump local \t\t$VERT[OK]$NORMAL"
+        verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
 fi
