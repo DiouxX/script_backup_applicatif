@@ -23,8 +23,14 @@ Utilisation du script :
 Exemple
 *******
 
+Si l'on veut transférer la sauvegarde
+
 script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -t backup@192.168.1.1:/mnt/backup_server
 
+
+Si l'on veut une sauvegarde en local
+
+script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -f /opt/backup/Redmine
 *********
 IMPORTANT
 *********
