@@ -1,12 +1,7 @@
 #!/bin/bash
 #Script générique pour réaliser un backup des fichiers d'un application
 #Susceptible d'etre ajouter dans une tache cron
- 
-#Auteur : DiouxX
-#Date : Septembre 2015
- 
-#Historique modification
- 
+
 #Couleur affichage
 VERT="\\033[1;32m" 
 NORMAL="\\033[0;39m" 
@@ -88,10 +83,10 @@ SOURCE_FOLDER=`echo $SOURCE | rev | cut -d/ -f1 | rev`
 PARENT_FOLDER=`echo $SOURCE | rev | cut -d/ -f2- | rev`
  
 #Assignation du fichier de backup et generation de la date
-if [ "$NAME" = ""  ]
+if [ -z $NAME  ]
 then
 	DATE=`date +"%Y"-"%m"-"%d"`
-	NAME=${SOURCE}-${DATE}.tar.bz2
+	NAME=${SOURCE_FOLDER}-${DATE}.tar.bz2
 else
 	DATE=`date +"%Y"-"%m"-"%d"`
 	NAME=${NAME}-${DATE}.tar.bz2
@@ -100,7 +95,7 @@ verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PAR
  
 #Archivage du dossier
 verbose "Création de l'archive..."
-if [ "$TAR_FOLDER" == "" ]
+if [ -z $TAR_FOLDER ]
 then
 	verbose "\nCommande Archive : tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
 	tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER
@@ -117,33 +112,48 @@ else
 fi
  
 #Copie de l'archive  vers le serveur renseigne en parametre
-if [ "$TAR_FOLDER" == "" ]
+#Si pas de TARGET specifie, on ne lance pas la commande scp
+if [ -z $TARGET ]
 then
-	verbose "\nCommande Transfert : scp $NAME $TARGET"
-	scp $NAME $TARGET > /dev/null 2>&1
+	verbose "$VERT"
+	verbose "Pas de copie distante$NORMAL"
 else
-	verbose "\nCommande Transfert : scp $TAR_FOLDER/$NAME $TARGET"
-	scp $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
-fi
- 
-if [ $? != 0 ]
-then
-        verbose "Transfert Archive \t\t\t$ROUGE[KO]$NORMAL"
-else
-        verbose "Transfert Archive  \t\t\t$VERT[OK]$NORMAL"
+	if [ "$TAR_FOLDER" == "" ]
+	then
+		verbose "\nCommande Transfert : scp $NAME $TARGET"
+		scp $NAME $TARGET > /dev/null 2>&1
+	else
+		verbose "\nCommande Transfert : scp $TAR_FOLDER/$NAME $TARGET"
+		scp $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
+	fi
+
+	if [ $? != 0 ]
+	then
+        	verbose "Transfert Archive \t\t\t$ROUGE[KO]$NORMAL"
+	else
+        	verbose "Transfert Archive  \t\t\t$VERT[OK]$NORMAL"
+	fi
+
 fi
  
 #Suppresion du dump local
-if [ "$TAR_FOLDER" == "" ]
+#Si pas de TARGET specifie, on ne supprime pas le DUMP
+if [ -z $TARGET ]
 then
-        rm -f $NAME
+	verbose "$VERT"
+        verbose "Pas de Suppression Backup local$NORMAL"
 else
-        rm -f $TAR_FOLDER/$NAME
-fi 
+        if [ "$TAR_FOLDER" == "" ]
+        then
+                rm -f $NAME
+        else
+                rm -f $TAR_FOLDER/$NAME
+        fi 
  
-if [ $? != 0 ]
-then
-        verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
-else
-        verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
+        if [ $? != 0 ]
+        then
+                verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
+        else
+                verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
+        fi
 fi
