@@ -17,24 +17,47 @@ Utilisation du script :
 
 -t	Chemin de sauvegarde de l hote distant
 
+-z Compression au format ZIP au lieu de tar.bz2
+
 -v	Mode verbeux
 
-*******
-Exemple
-*******
+
+## Exemple
+
+### TAR.BZ2
+
+Si l'on veut transférer la sauvegarde:
+
+```sh
+script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -t backup@192.168.1.1:/mnt/backup_server
+```
+
+Si l'on veut une sauvegarde en local:
+
+```sh
+script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -f /opt/backup/Redmine
+```
+
+### ZIP
 
 Si l'on veut transférer la sauvegarde
 
-script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -t backup@192.168.1.1:/mnt/backup_server
-
+```sh
+script_backup_applicatif -z -s /opt/redmine-2.6.0 -n Redmine -t backup@192.168.1.1:/mnt/backup_server
+```
 
 Si l'on veut une sauvegarde en local
 
-script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -f /opt/backup/Redmine
+```sh
+script_backup_applicatif -z -s /opt/redmine-2.6.0 -n Redmine -f /opt/backup/Redmine
+```
+
 *********
 IMPORTANT
 *********
 
 Pensez à copier la clef public sur le serveur que vous desirer envoyer le backup ( Pour automatiser la tache de backup)
 
+```sh
 [user@ordi ~]$ ssh-copy-id -i ~/.ssh/id_dsa.pub root@serveur-distant
+```

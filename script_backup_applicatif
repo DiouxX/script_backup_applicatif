@@ -20,7 +20,9 @@ PARENT_FOLDER=""
 TAR_FOLDER=""
 NAME=""
 TARGET=""
-VERBOSE=0
+VERBOSE=false
+ZIP=false
+DATE=`date +"%Y"-"%m"-"%d"`
  
 function usage(){
   echo -e "Utilisation du script :"
@@ -29,9 +31,13 @@ function usage(){
   echo -e "-n\tNom du Backup (default: Nom du dossier + YYYY/MM/DD)"
   echo -e "-f\tDossier pour la création de l'archive (default: Dossier courant)"
   echo -e "-t\tChemin de sauvegarde de l hote distant"
+  echo -e "-z\tCompression au format ZIP au lieu de tar.bz2"
   echo -e "-v\tMode verbeux"
   echo -e "\nExemple utilisation"
-  echo -e "script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -t root@192.168.1.7:/mnt/backup_server/backup_mysql/glpinew/"
+  echo -e "\nTAR.BZ2"
+  echo -e "script_backup_applicatif -s /opt/redmine-2.6.0 -n Redmine -t root@192.168.1.1:/mnt/backup_server/backup_mysql/glpinew/"
+  echo -e "\nZIP"
+  echo -e "script_backup_applicatif -z -s /opt/redmine-2.6.0 -n Redmine -t root@192.168.1.1:/mnt/backup_server/backup_mysql/glpinew/"
   echo -e "\nIMPORTANT\nPensez à copier la clef public sur le serveur que vous desirer envoyer le backup ( Pour automatiser la tache de backup)"
   echo -e "[user@ordi ~]$ ssh-copy-id -i ~/.ssh/id_dsa.pub root@serveur-distant"
   exit 0
@@ -39,11 +45,11 @@ function usage(){
 }
  
 function verbose(){
-	if [ $VERBOSE -eq 1 ]
+	if $VERBOSE;
 	then
         	#Affichage de debug
         	echo -e "$1"
-	fi
+	fi;
 }
  
 if [ $# -eq 0 ]
@@ -52,7 +58,7 @@ then
 fi
  
  
-while getopts s:n:f:vt: option
+while getopts s:n:f:zvt: option
 do
  case $option in
   s)
@@ -68,7 +74,10 @@ do
    TARGET=$OPTARG
    ;;
   v)
-   VERBOSE=1
+   VERBOSE=true
+    ;;
+  z)
+   ZIP=true
     ;;
   *)
     usage
@@ -83,25 +92,59 @@ SOURCE_FOLDER=`echo $SOURCE | rev | cut -d/ -f1 | rev`
 PARENT_FOLDER=`echo $SOURCE | rev | cut -d/ -f2- | rev`
  
 #Assignation du fichier de backup et generation de la date
+#Si pas de nom pour le backup => NOM BACKUP = NOM DU DOSSIER
+#sinon NOM BACKUP = NOM SPECIFIE
 if [ -z $NAME  ]
 then
-	DATE=`date +"%Y"-"%m"-"%d"`
-	NAME=${SOURCE_FOLDER}-${DATE}.tar.bz2
+	#Si l'option ZIP
+	if $ZIP;
+	then
+		NAME=${SOURCE_FOLDER}-${DATE}.zip
+	else
+		NAME=${SOURCE_FOLDER}-${DATE}.tar.bz2
+	fi
 else
-	DATE=`date +"%Y"-"%m"-"%d"`
-	NAME=${NAME}-${DATE}.tar.bz2
+	#Si l'option ZIP
+	if $ZIP;
+	then
+		NAME=${NAME}-${DATE}.zip
+	else
+		NAME=${NAME}-${DATE}.tar.bz2
+	fi
 fi
-verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET"
- 
+
+#Affichage des paramètres
+#Si l'option ZIP est activée
+if $ZIP;
+then
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tCompression : ZIP";
+else
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tCompression : TAR.BZ2";
+fi;
+
 #Archivage du dossier
 verbose "Création de l'archive..."
+#TAR_FOLDER = Dossier pour la creation de l'archive
+
 if [ -z $TAR_FOLDER ]
 then
-	verbose "\nCommande Archive : tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
-	tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER
+	if $ZIP;
+	then
+		verbose "\nCommande Archive : zip -j -r $NAME $SOURCE"
+		zip -j -r $NAME $SOURCE
+	else
+		verbose "\nCommande Archive : tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
+		tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER
+	fi
 else
-	verbose "\nCommande Archive : tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
-	tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER
+	if $ZIP;
+	then
+		verbose "\nCommande Archive : zip -j -r $TAR_FOLDER/$NAME $SOURCE"
+		zip -j -r $TAR_FOLDER/$NAME $SOURCE
+	else
+		verbose "\nCommande Archive : tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
+		tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER
+	fi
 fi
  
 if [ $? != 0 ]
