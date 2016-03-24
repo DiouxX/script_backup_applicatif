@@ -20,6 +20,7 @@ PARENT_FOLDER=""
 TAR_FOLDER=""
 NAME=""
 TARGET=""
+PORT=22
 VERBOSE=false
 ZIP=false
 DATE=`date +"%Y"-"%m"-"%d"`
@@ -31,6 +32,7 @@ function usage(){
   echo -e "-n\tNom du Backup (default: Nom du dossier + YYYY/MM/DD)"
   echo -e "-f\tDossier pour la création de l'archive (default: Dossier courant)"
   echo -e "-t\tChemin de sauvegarde de l hote distant"
+  echo -e "-P\tPort SSH de l hote distant (default : 22)"
   echo -e "-z\tCompression au format ZIP au lieu de tar.bz2"
   echo -e "-v\tMode verbeux"
   echo -e "\nExemple utilisation"
@@ -58,7 +60,7 @@ then
 fi
  
  
-while getopts s:n:f:zvt: option
+while getopts s:n:f:P:zvt: option
 do
  case $option in
   s)
@@ -73,6 +75,9 @@ do
   t)
    TARGET=$OPTARG
    ;;
+  P)
+	PORT=$OPTARG
+	;;
   v)
    VERBOSE=true
     ;;
@@ -117,9 +122,9 @@ fi
 #Si l'option ZIP est activée
 if $ZIP;
 then
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tCompression : ZIP";
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tPort : $PORT\n\tCompression : ZIP";
 else
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tCompression : TAR.BZ2";
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2";
 fi;
 
 #Archivage du dossier
@@ -163,11 +168,11 @@ then
 else
 	if [ "$TAR_FOLDER" == "" ]
 	then
-		verbose "\nCommande Transfert : scp $NAME $TARGET"
-		scp $NAME $TARGET > /dev/null 2>&1
+		verbose "\nCommande Transfert : scp -P $PORT $NAME $TARGET"
+		scp -P $PORT $NAME $TARGET > /dev/null 2>&1
 	else
-		verbose "\nCommande Transfert : scp $TAR_FOLDER/$NAME $TARGET"
-		scp $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
+		verbose "\nCommande Transfert : scp -P $PORT $TAR_FOLDER/$NAME $TARGET"
+		scp -P $PORT $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
 	fi
 
 	if [ $? != 0 ]

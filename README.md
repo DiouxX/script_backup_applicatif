@@ -2,7 +2,7 @@
 
 ## Description
 Ce script permet de sauvegarder les fichiers d'une application en créant une archive
-tar.bz2 et en le copiant sur un serveur distant
+et de la copier sur un serveur distant
 
 ## Utilisation
 
@@ -16,6 +16,8 @@ Utilisation du script :
 -f	Dossier pour la création de l'archive (default: Dossier courant)
 
 -t	Chemin de sauvegarde de l hote distant
+
+-P	Port SSH de l hote distant (default : 22)
 
 -z Compression au format ZIP au lieu de tar.bz2
 
