@@ -19,7 +19,9 @@ Utilisation du script :
 
 -P	Port SSH de l hote distant (default : 22)
 
--z Compression au format ZIP au lieu de tar.bz2
+-z  Compression au format ZIP au lieu de tar.bz2
+
+-k  Garder la sauvegarde en local si l'option de transfert est activée
 
 -v	Mode verbeux
 

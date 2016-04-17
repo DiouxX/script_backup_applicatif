@@ -23,6 +23,7 @@ TARGET=""
 PORT=22
 VERBOSE=false
 ZIP=false
+KEEP=false
 DATE=`date +"%Y"-"%m"-"%d"`
  
 function usage(){
@@ -34,6 +35,7 @@ function usage(){
   echo -e "-t\tChemin de sauvegarde de l hote distant"
   echo -e "-P\tPort SSH de l hote distant (default : 22)"
   echo -e "-z\tCompression au format ZIP au lieu de tar.bz2"
+  echo -e "-k\tGarder la sauvegarde en local aussi si l'option de transfert est activée"
   echo -e "-v\tMode verbeux"
   echo -e "\nExemple utilisation"
   echo -e "\nTAR.BZ2"
@@ -60,7 +62,7 @@ then
 fi
  
  
-while getopts s:n:f:P:zvt: option
+while getopts s:n:f:P:zkvt: option
 do
  case $option in
   s)
@@ -83,6 +85,9 @@ do
     ;;
   z)
    ZIP=true
+    ;;
+  k)
+   KEEP=true
     ;;
   *)
     usage
@@ -122,13 +127,13 @@ fi
 #Si l'option ZIP est activée
 if $ZIP;
 then
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tPort : $PORT\n\tCompression : ZIP";
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : ZIP\n\tKeep : $KEEP";
 else
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDestination : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2";
+	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2\n\tKeep : $KEEP";
 fi;
 
 #Archivage du dossier
-verbose "Création de l'archive..."
+verbose "\nCréation de l'archive..."
 #TAR_FOLDER = Dossier pour la creation de l'archive
 
 if [ -z $TAR_FOLDER ]
@@ -189,19 +194,30 @@ fi
 if [ -z $TARGET ]
 then
 	verbose "$VERT"
-        verbose "Pas de Suppression Backup local$NORMAL"
+    verbose "Pas de Suppression Backup local$NORMAL"
 else
-        if [ "$TAR_FOLDER" == "" ]
-        then
-                rm -f $NAME
-        else
-                rm -f $TAR_FOLDER/$NAME
-        fi 
- 
-        if [ $? != 0 ]
-        then
-                verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
-        else
-                verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
-        fi
+	#Si l'option KEEP, on ne supprime pas le Backup local
+	if $KEEP;
+	then
+		verbose "$VERT"
+		verbose "Option KEEP : Pas de suppresion du Backup local$NORMAL";
+	else
+		if [ "$TAR_FOLDER" == "" ]
+		then
+				rm -f $NAME
+		else
+				rm -f $TAR_FOLDER/$NAME
+		fi
+	fi 
+		
+		#Résultat de la suppression si option KEEP = false
+		if ! $KEEP;
+		then
+			if [ $? != 0 ]
+			then
+					verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
+			else
+					verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
+			fi
+		fi
 fi
