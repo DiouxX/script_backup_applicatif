@@ -24,6 +24,7 @@ PORT=22
 VERBOSE=false
 ZIP=false
 KEEP=false
+COMPRESSION="TAR.BZ2"
 DATE=`date +"%Y"-"%m"-"%d"`
  
 function usage(){
@@ -47,7 +48,7 @@ function usage(){
   exit 0
  
 }
- 
+
 #Fonction pour afficher le debug
 #$1 = 0 ou 1 ( 1 pour afficher l'heure dans le message de debug"
 #$2 = Message à afficher
@@ -64,7 +65,8 @@ function verbose(){
 		fi;
 	fi;
 }
- 
+
+#Affichage de l'utilisation du script si pas de parametres
 if [ $# -eq 0 ]
 then
   usage
@@ -109,6 +111,12 @@ SOURCE_FOLDER=`echo $SOURCE | rev | cut -d/ -f1 | rev`
  
 #Extraction du dossier racine a archiver
 PARENT_FOLDER=`echo $SOURCE | rev | cut -d/ -f2- | rev`
+
+#Assigner le nom de la compression
+if $ZIP;
+then
+	COMPRESSION="ZIP"
+fi
  
 #Assignation du fichier de backup et generation de la date
 #Si pas de nom pour le backup => NOM BACKUP = NOM DU DOSSIER
@@ -133,18 +141,12 @@ else
 fi
 
 #Affichage des paramètres
-#Si l'option ZIP est activée
-if $ZIP;
-then
-	verbose 1 "Listing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : ZIP\n\tKeep : $KEEP";
-else
-	verbose 1 "Listing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2\n\tKeep : $KEEP";
-fi;
+verbose 1 "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : $COMPRESSION\n\tKeep : $KEEP";
 
 #Archivage du dossier
 verbose 1 "Création de l'archive..."
-#TAR_FOLDER = Dossier pour la creation de l'archive
 
+#TAR_FOLDER = Dossier pour la creation de l'archive
 if [ -z $TAR_FOLDER ]
 then
 	if $ZIP;
@@ -182,10 +184,10 @@ then
 else
 	if [ "$TAR_FOLDER" == "" ]
 	then
-		verbose 1 "\nCommande Transfert : scp -P $PORT $NAME $TARGET"
+		verbose 1 "Commande Transfert : scp -P $PORT $NAME $TARGET"
 		scp -P $PORT $NAME $TARGET > /dev/null 2>&1
 	else
-		verbose 1 "\nCommande Transfert : scp -P $PORT $TAR_FOLDER/$NAME $TARGET"
+		verbose 1 "Commande Transfert : scp -P $PORT $TAR_FOLDER/$NAME $TARGET"
 		scp -P $PORT $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
 	fi
 
