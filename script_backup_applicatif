@@ -48,11 +48,20 @@ function usage(){
  
 }
  
+#Fonction pour afficher le debug
+#$1 = 0 ou 1 ( 1 pour afficher l'heure dans le message de debug"
+#$2 = Message à afficher
 function verbose(){
 	if $VERBOSE;
 	then
-        	#Affichage de debug
-        	echo -e "$1"
+		if [ $1 -eq 1 ]
+		then
+			#Affichage de debug
+        	horodate=`date +"\n%d"/"%m"/"%Y"-"%H":"%M":"%S -- "`
+        	echo -e "$horodate$2"
+        else
+			echo -e "$2"
+		fi;
 	fi;
 }
  
@@ -127,64 +136,64 @@ fi
 #Si l'option ZIP est activée
 if $ZIP;
 then
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : ZIP\n\tKeep : $KEEP";
+	verbose 1 "Listing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : ZIP\n\tKeep : $KEEP";
 else
-	verbose "\nListing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2\n\tKeep : $KEEP";
+	verbose 1 "Listing des parametres :\n\tSource : $SOURCE\n\tDossier Parent : $PARENT_FOLDER\n\tDossier : $SOURCE_FOLDER\n\tNom : $NAME\n\tDossier backup : $TAR_FOLDER\n\tDossier distant : $TARGET\n\tPort : $PORT\n\tCompression : TAR.BZ2\n\tKeep : $KEEP";
 fi;
 
 #Archivage du dossier
-verbose "\nCréation de l'archive..."
+verbose 1 "Création de l'archive..."
 #TAR_FOLDER = Dossier pour la creation de l'archive
 
 if [ -z $TAR_FOLDER ]
 then
 	if $ZIP;
 	then
-		verbose "\nCommande Archive : zip -j -r $NAME $SOURCE"
+		verbose 0 "\nCommande Archive : zip -j -r $NAME $SOURCE"
 		zip -j -r $NAME $SOURCE
 	else
-		verbose "\nCommande Archive : tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
+		verbose 0 "\nCommande Archive : tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
 		tar cjf $NAME -C $PARENT_FOLDER $SOURCE_FOLDER
 	fi
 else
 	if $ZIP;
 	then
-		verbose "\nCommande Archive : zip -j -r $TAR_FOLDER/$NAME $SOURCE"
+		verbose 0 "\nCommande Archive : zip -j -r $TAR_FOLDER/$NAME $SOURCE"
 		zip -j -r $TAR_FOLDER/$NAME $SOURCE
 	else
-		verbose "\nCommande Archive : tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
+		verbose 0 "\nCommande Archive : tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER"
 		tar cjf $TAR_FOLDER/$NAME -C $PARENT_FOLDER $SOURCE_FOLDER
 	fi
 fi
  
 if [ $? != 0 ]
 then
-	verbose "Création de l'archive \t\t\t$ROUGE[KO]$NORMAL"
+	verbose 1 "Création de l'archive \t\t\t$ROUGE[KO]$NORMAL"
 else
-	verbose "Création de l'archive \t\t\t$VERT[OK]$NORMAL"
+	verbose 1 "Création de l'archive \t\t\t$VERT[OK]$NORMAL"
 fi
  
 #Copie de l'archive  vers le serveur renseigne en parametre
 #Si pas de TARGET specifie, on ne lance pas la commande scp
 if [ -z $TARGET ]
 then
-	verbose "$VERT"
-	verbose "Pas de copie distante$NORMAL"
+	verbose 0 "$VERT"
+	verbose 0 "Pas de copie distante$NORMAL"
 else
 	if [ "$TAR_FOLDER" == "" ]
 	then
-		verbose "\nCommande Transfert : scp -P $PORT $NAME $TARGET"
+		verbose 1 "\nCommande Transfert : scp -P $PORT $NAME $TARGET"
 		scp -P $PORT $NAME $TARGET > /dev/null 2>&1
 	else
-		verbose "\nCommande Transfert : scp -P $PORT $TAR_FOLDER/$NAME $TARGET"
+		verbose 1 "\nCommande Transfert : scp -P $PORT $TAR_FOLDER/$NAME $TARGET"
 		scp -P $PORT $TAR_FOLDER/$NAME $TARGET > /dev/null 2>&1
 	fi
 
 	if [ $? != 0 ]
 	then
-        	verbose "Transfert Archive \t\t\t$ROUGE[KO]$NORMAL"
+        	verbose 1 "Transfert Archive \t\t\t$ROUGE[KO]$NORMAL"
 	else
-        	verbose "Transfert Archive  \t\t\t$VERT[OK]$NORMAL"
+        	verbose 1 "Transfert Archive  \t\t\t$VERT[OK]$NORMAL"
 	fi
 
 fi
@@ -193,14 +202,14 @@ fi
 #Si pas de TARGET specifie, on ne supprime pas le DUMP
 if [ -z $TARGET ]
 then
-	verbose "$VERT"
-    verbose "Pas de Suppression Backup local$NORMAL"
+	verbose 0 "$VERT"
+    verbose 0 "Pas de Suppression Backup local$NORMAL"
 else
 	#Si l'option KEEP, on ne supprime pas le Backup local
 	if $KEEP;
 	then
-		verbose "$VERT"
-		verbose "Option KEEP : Pas de suppresion du Backup local$NORMAL";
+		verbose 0 "$VERT"
+		verbose 0 "Option KEEP : Pas de suppresion du Backup local$NORMAL";
 	else
 		if [ "$TAR_FOLDER" == "" ]
 		then
@@ -215,9 +224,9 @@ else
 		then
 			if [ $? != 0 ]
 			then
-					verbose "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
+					verbose 1 "Suppression Backup local \t\t$ROUGE[KO]$NORMAL"
 			else
-					verbose "Suppression Backup local \t\t$VERT[OK]$NORMAL"
+					verbose 1 "Suppression Backup local \t\t$VERT[OK]$NORMAL"
 			fi
 		fi
 fi
