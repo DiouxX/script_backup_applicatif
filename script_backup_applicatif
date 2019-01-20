@@ -58,9 +58,9 @@ function verbose(){
 		if [ $1 -eq 1 ]
 		then
 			#Affichage de debug
-        	horodate=`date +"\n%d"/"%m"/"%Y"-"%H":"%M":"%S -- "`
-        	echo -e "$horodate$2"
-        else
+        		horodate=`date +"\n%d"/"%m"/"%Y"-"%H":"%M":"%S -- "`
+        		echo -e "$horodate$2"
+        	else
 			echo -e "$2"
 		fi;
 	fi;
@@ -179,7 +179,7 @@ fi
 #Si pas de TARGET specifie, on ne lance pas la commande scp
 if [ -z $TARGET ]
 then
-	verbose 0 "$VERT"
+	verbose 0 "$JAUNE"
 	verbose 0 "Pas de copie distante$NORMAL"
 else
 	if [ "$TAR_FOLDER" == "" ]
@@ -204,13 +204,13 @@ fi
 #Si pas de TARGET specifie, on ne supprime pas le DUMP
 if [ -z $TARGET ]
 then
-	verbose 0 "$VERT"
-    verbose 0 "Pas de Suppression Backup local$NORMAL"
+	verbose 0 "$JAUNE"
+	verbose 0 "Pas de Suppression Backup local$NORMAL"
 else
 	#Si l'option KEEP, on ne supprime pas le Backup local
 	if $KEEP;
 	then
-		verbose 0 "$VERT"
+		verbose 0 "$JAUNE"
 		verbose 0 "Option KEEP : Pas de suppresion du Backup local$NORMAL";
 	else
 		if [ "$TAR_FOLDER" == "" ]
